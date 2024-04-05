@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import Link from 'next/link';
 
-import { getRecentPosts } from '../services';
+import { getRecentPosts, getSimilarPosts } from '../services';
 
 const PostWidget = ({ categories, slug }) => {
   const [relatedPosts, setRelatedPosts] = useState([]);
@@ -15,10 +15,15 @@ const PostWidget = ({ categories, slug }) => {
       getRecentPosts()
         .then((result) => setRelatedPosts(result))
     }
-  }, [input])
+  }, [slug])
+
+  console.log(relatedPosts)
+
   return (
-    <div>
-      PostWidget
+    <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
+      <h3 className="text-xl mb-8 font-semibold border-b pb-4">
+        {slug ? 'Related Posts' : 'Recent Posts'}
+      </h3>
     </div>
   )
 }

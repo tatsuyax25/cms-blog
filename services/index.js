@@ -7,6 +7,7 @@ export const getPosts = async () => {
     query MyQuery {
       postsConnection {
         edges {
+          cursor
           node {
             author {
               bio
@@ -38,7 +39,7 @@ export const getPosts = async () => {
   return result.postsConnection.edges;
 };
 
-export const getPostDetails = async () => {
+export const getRecentPosts = async () => {
   const query = gql`
     query GetPostDetails() {
       posts(
