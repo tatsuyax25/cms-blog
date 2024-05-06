@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import moment from 'moment';
-import Link from 'next/link';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import moment from "moment";
+import Link from "next/link";
 
-import { getRecentPosts, getSimilarPosts } from '../services';
+import { grpahCMSImageLoader } from "../util";
+import { getSimilarPosts, getRecentPosts } from "../services";
 
 const PostWidget = ({ categories, slug }) => {
   const [relatedPosts, setRelatedPosts] = useState([]);
@@ -51,4 +53,4 @@ const PostWidget = ({ categories, slug }) => {
   );
 };
 
-export default PostWidget
+export default PostWidget;
