@@ -2,6 +2,29 @@ import { request, gql } from 'graphql-request';
 
 const graphqlAPI = process.env.NEXT_PUBLIC_GRAPHCMS_ENDPOINT;
 
+// Simple cache to reduce API calls
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const cachedRequest = async (query, variables = {}) => {
+  const cacheKey = JSON.stringify({ query, variables });
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
+  try {
+    const result = await request(graphqlAPI, query, variables);
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
+  } catch (error) {
+    if (cached) return cached.data;
+    // Return empty data structure to prevent crashes
+    return { postsConnection: { edges: [] }, posts: [], categories: [], comments: [], post: null };
+  }
+};
+
 export const getPosts = async () => {
   const query = gql`
     query MyQuery {
@@ -34,7 +57,7 @@ export const getPosts = async () => {
     }
   `;
 
-  const result = await request(graphqlAPI, query);
+  const result = await cachedRequest(query);
 
   return result.postsConnection.edges;
 };
@@ -69,7 +92,7 @@ export const getPostDetails = async (slug) => {
     }
   `;
 
-  const result = await request(graphqlAPI, query, { slug });
+  const result = await cachedRequest(query, { slug });
 
   return result.post;
 };
@@ -91,9 +114,9 @@ export const getRecentPosts = async () => {
     }
   `
 
-  const result = await request(graphqlAPI, query);
+  const result = await cachedRequest(query);
 
-  return result.post;
+  return result.posts;
 }
 
 export const getSimilarPosts = async (categories, slug) => {
@@ -116,9 +139,9 @@ export const getSimilarPosts = async (categories, slug) => {
     }
   `;
 
-  const result = await request(graphqlAPI, query, { categories, slug });
+  const result = await cachedRequest(query, { categories, slug });
 
-  return result.post;
+  return result.posts;
 }
 
 export const getCategories = async () => {
@@ -131,7 +154,7 @@ export const getCategories = async () => {
     }
   `;
 
-  const result = await request(graphqlAPI, query);
+  const result = await cachedRequest(query);
 
   return result.categories;
 }
@@ -159,7 +182,7 @@ export const getComments = async (slug) => {
     }
   `;
 
-  const result = await request(graphqlAPI, query, { slug });
+  const result = await cachedRequest(query, { slug });
 
   return result.comments;
 };
@@ -184,7 +207,7 @@ export const getFeaturedPosts = async () => {
     }   
   `;
 
-  const result = await request(graphqlAPI, query);
+  const result = await cachedRequest(query);
 
   return result.posts;
 };
